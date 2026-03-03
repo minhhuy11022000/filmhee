@@ -1,0 +1,82 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // Pooled connection (PgBouncer) — used at runtime
+  directUrl = env("DIRECT_URL")     // Direct connection — used for migrations only
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  password     String
+  avatarUrl    String?
+  subscription String   @default("free") // "free" | "standard" | "premium"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  watchlist WatchlistItem[]
+  history   WatchHistory[]
+}
+
+model Film {
+  id            String   @id @default(cuid())
+  title         String
+  year          Int
+  genres        String[] // PostgreSQL array
+  rating        Float
+  duration      Int      // minutes
+  posterUrl     String
+  backdropUrl   String
+  description   String
+  director      String
+  muxPlaybackId String?  // Mux video playback ID (set when video is uploaded)
+  featured      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  cast      CastMember[]
+  watchlist WatchlistItem[]
+  history   WatchHistory[]
+}
+
+model CastMember {
+  id        String @id @default(cuid())
+  name      String
+  character String
+  avatarUrl String
+  film      Film   @relation(fields: [filmId], references: [id], onDelete: Cascade)
+  filmId    String
+}
+
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  film   Film   @relation(fields: [filmId], references: [id], onDelete: Cascade)
+  filmId String
+
+  @@unique([userId, filmId])
+}
+
+model WatchHistory {
+  id        String   @id @default(cuid())
+  progress  Int      @default(0) // 0–100 percentage
+  watchedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  film   Film   @relation(fields: [filmId], references: [id], onDelete: Cascade)
+  filmId String
+
+  @@unique([userId, filmId])
+}
