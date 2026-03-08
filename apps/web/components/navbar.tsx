@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search, Bell, ChevronDown, X, Clapperboard } from "lucide-react";
+import { Search, Bell, ChevronDown, X, Clapperboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { CURRENT_USER } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -19,8 +18,15 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  function handleLogout() {
+    logout();
+    router.push("/");
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-6 md:px-10 bg-linear-to-b from-black/90 to-transparent backdrop-blur-sm border-b border-white/5">
@@ -78,24 +84,48 @@ export function Navbar() {
           </Button>
         )}
 
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white hover:bg-white/10 relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
-        </Button>
+        {user ? (
+          <>
+            {/* Notifications */}
+            <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white hover:bg-white/10 relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
+            </Button>
 
-        {/* User menu */}
-        <Link href="/profile">
-          <div className="flex items-center gap-2 cursor-pointer group ml-1">
-            <Avatar className="w-8 h-8 border border-white/20">
-              <AvatarImage src={CURRENT_USER.avatarUrl} alt={CURRENT_USER.name} />
-              <AvatarFallback className="bg-primary text-white text-xs">
-                {CURRENT_USER.name.split(" ").map((n) => n[0]).join("")}
-              </AvatarFallback>
-            </Avatar>
-            <ChevronDown className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-colors hidden md:block" />
-          </div>
-        </Link>
+            {/* User avatar → profile */}
+            <Link href="/profile">
+              <div className="flex items-center gap-2 cursor-pointer group ml-1">
+                <Avatar className="w-8 h-8 border border-white/20">
+                  <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
+                  <AvatarFallback className="bg-primary text-white text-xs">
+                    {user.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <ChevronDown className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-colors hidden md:block" />
+              </div>
+            </Link>
+
+            {/* Logout */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-zinc-400 hover:text-white hover:bg-white/10"
+              onClick={handleLogout}
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </>
+        ) : (
+          <Link href="/login">
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-white font-semibold ml-1"
+            >
+              Sign in
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );

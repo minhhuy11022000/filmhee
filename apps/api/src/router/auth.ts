@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { db } from "../lib/db";
 import { signJWT } from "../lib/auth";
 
@@ -59,4 +59,10 @@ export const authRouter = router({
       const token = signJWT(user.id);
       return { token, user: safeUser(user) };
     }),
+
+  me: protectedProcedure.query(async ({ ctx }) => {
+    const user = await db.user.findUnique({ where: { id: ctx.userId } });
+    if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found." });
+    return safeUser(user);
+  }),
 });
