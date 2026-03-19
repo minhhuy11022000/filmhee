@@ -7,10 +7,10 @@ A streaming films web app MVP — dark cinematic style built with Next.js, Hono,
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 16, React 19, Tailwind CSS v4, ShadCN UI |
-| Backend | Hono, tRPC v11, Node.js |
+| Backend | Hono, tRPC v11, Bun runtime |
 | Database | PostgreSQL via Supabase + Prisma ORM |
 | Auth | JWT (jsonwebtoken) + bcryptjs |
-| Monorepo | Turborepo + npm workspaces |
+| Monorepo | Turborepo + Bun workspaces |
 
 ## Project Structure
 
@@ -27,9 +27,13 @@ filmhee/
 
 ## Prerequisites
 
-- Node.js >= 20
-- npm >= 10
+- [Bun](https://bun.sh) >= 1.1.0
 - A [Supabase](https://supabase.com) account (free tier works)
+
+Install Bun (if not already installed):
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
 
 ---
 
@@ -80,11 +84,11 @@ FRONTEND_URL="http://localhost:3000"
 
 ```bash
 # From the repo root — installs all workspaces
-npm install
+bun install
 
 # Apply the database schema to Supabase
 cd apps/api
-npm run db:migrate
+bun run db:migrate
 ```
 
 > If asked for a migration name, type something like `init` and press Enter.
@@ -94,13 +98,13 @@ npm run db:migrate
 This is done automatically by `db:migrate`, but you can also run it manually:
 
 ```bash
-npm run db:generate
+bun run db:generate
 ```
 
 ### Start the API server
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 The API will be available at `http://localhost:3001`.
@@ -117,11 +121,6 @@ GET http://localhost:3001/health
 
 ### Configure environment variables
 
-```bash
-cd apps/web
-cp .env.example .env.local   # if .env.example exists, otherwise create manually
-```
-
 Create `apps/web/.env.local`:
 
 ```env
@@ -134,7 +133,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ```bash
 cd apps/web
-npm run dev
+bun run dev
 ```
 
 The app will be available at `http://localhost:3000`.
@@ -146,7 +145,7 @@ The app will be available at `http://localhost:3000`.
 From the repo root, Turborepo starts both apps in parallel:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 ---
@@ -206,7 +205,7 @@ Authorization: Bearer <token>
 
 ```bash
 cd apps/api
-npm run db:studio
+bun run db:studio
 ```
 
 Opens Prisma Studio at `http://localhost:5555` — a visual database browser.
@@ -223,8 +222,8 @@ Opens Prisma Studio at `http://localhost:5555` — a visual database browser.
 
 ```bash
 cd apps/api
-npm run db:migrate        # create + apply new migration
-npm run db:generate       # regenerate Prisma client after schema changes
+bun run db:migrate        # create + apply new migration
+bun run db:generate       # regenerate Prisma client after schema changes
 ```
 
 > Always commit the `prisma/migrations/` folder to git. Never commit `.env`.
@@ -235,10 +234,10 @@ npm run db:generate       # regenerate Prisma client after schema changes
 
 | Command | Location | Description |
 |---------|----------|-------------|
-| `npm run dev` | root | Start all apps with Turborepo |
-| `npm run build` | root | Build all apps |
-| `npm run dev` | `apps/api` | Start API server (hot reload) |
-| `npm run dev` | `apps/web` | Start Next.js dev server |
-| `npm run db:migrate` | `apps/api` | Run Prisma migrations |
-| `npm run db:generate` | `apps/api` | Regenerate Prisma client |
-| `npm run db:studio` | `apps/api` | Open Prisma Studio |
+| `bun run dev` | root | Start all apps with Turborepo |
+| `bun run build` | root | Build all apps |
+| `bun run dev` | `apps/api` | Start API server (hot reload via `--watch`) |
+| `bun run dev` | `apps/web` | Start Next.js dev server |
+| `bun run db:migrate` | `apps/api` | Run Prisma migrations |
+| `bun run db:generate` | `apps/api` | Regenerate Prisma client |
+| `bun run db:studio` | `apps/api` | Open Prisma Studio |
